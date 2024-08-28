@@ -44,6 +44,7 @@ RegisterNetEvent('aj-veh-package:client:StartRandomPackage', function(vNetID)
     end
     SetDisableFragDamage(package, true)
     SetEntityCollision(package, false, false)
+    ---@diagnostic disable-next-line: redundant-parameter
     AttachEntityToEntity(package, entity, boneID, 0.0, 0.0, 0.0, 0.0, 0.0, math.random(0, 359) + 0.0, 0.0, false, false, false, false, 2, true, false)
 end)
 
