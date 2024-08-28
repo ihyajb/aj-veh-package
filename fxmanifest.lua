@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 description 'Spawns a package inside a random vehicle'
-version '1.0.2'
+version '1.0.3'
 author '@ihyajb'
 
 shared_script '@ox_lib/init.lua'
