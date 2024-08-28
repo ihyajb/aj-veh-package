@@ -1,4 +1,5 @@
 local Config = require'shared.config'
+local Objects = {}
 
 local Seats = {
     'seat_pside_f',
@@ -16,40 +17,60 @@ local function GetValidSeats(entity)
     return count
 end
 
-RegisterNetEvent('aj-veh-package:client:StartRandomPackage', function(vNetID)
+lib.callback.register('aj-veh-package:client:ValidateVehicle', function(vNetID)
     local entity = lib.waitFor(function()
         if NetworkDoesEntityExistWithNetworkId(vNetID) then return NetworkGetEntityFromNetworkId(vNetID) end
-    end, 'Failed to get vehicle NetworkID', 10000)
+    end, 'Failed to get vehicle NetworkID', 5000)
+    if not entity then return false end
     local validSeats = GetValidSeats(entity)
     if validSeats == 0 then
         lib.print.error(string.format('Vehicle "%s" failed to generare any valid seats!', GetEntityArchetypeName(entity)))
-        return
+        return false
     end
     local selectedSeat = Seats[math.random(1, validSeats)]
     local boneID = GetEntityBoneIndexByName(entity, selectedSeat)
-    local oNetID = lib.callback.await('aj-veh-package:server:CreatePackage', false, vNetID)
-    local package = lib.waitFor(function()
-        if NetworkDoesEntityExistWithNetworkId(oNetID) then return NetworkGetEntityFromNetworkId(oNetID) end
-    end, 'Failed to get object NetworkID', 10000)
-
-    --! This is prob bad code but ¯\_(ツ)_/¯
-    while DoesEntityExist(entity) and not NetworkHasControlOfEntity(entity) do
-        NetworkRequestControlOfEntity(entity)
-        Wait(0)
+    if boneID == 0 or not boneID then
+        return false
     end
-    while DoesEntityExist(package) and not NetworkHasControlOfEntity(package) do
-        NetworkRequestControlOfEntity(package)
-        Wait(0)
-    end
+    return true, boneID
+end)
 
+AddStateBagChangeHandler('loadPackage', nil, function(bagName, key, value, reserved, replicated)
+    if replicated then return end
+    if not value then return end
+    local vehicle = lib.waitFor(function()
+        local e = GetEntityFromStateBagName(bagName)
+        if e > 0 and DoesEntityExist(e) then
+            return e
+        end
+    end)
+    if not vehicle then return end
+
+    lib.requestModel(value.model)
+    local coords = GetEntityCoords(vehicle)
+    local package = CreateObjectNoOffset(value.model, coords.x, coords.y, coords.z - 5, false, true, false)
+    SetModelAsNoLongerNeeded(value.model)
     if Config.debug then
         SetEntityDrawOutline(package, true)
         SetEntityDrawOutlineShader(1)
     end
     SetDisableFragDamage(package, true)
     SetEntityCollision(package, false, false)
+    SetEntityNoCollisionEntity(package, vehicle, false)
     ---@diagnostic disable-next-line: redundant-parameter
-    AttachEntityToEntity(package, entity, boneID, 0.0, 0.0, 0.0, 0.0, 0.0, math.random(0, 359) + 0.0, 0.0, false, false, false, false, 2, true, false)
+    AttachEntityToEntity(package, vehicle, value.boneID, 0.0, 0.0, 0.0, 0.0, 0.0, value.rotation, 0.0, false, false, false, false, 2, true, false)
+    Objects[package] = true
+    CreateThread(function()
+        while DoesEntityExist(vehicle) do
+            local state = Entity(vehicle).state
+            if not state.hasPackage then
+                break
+            end
+            Wait(1000)
+        end
+        DeleteEntity(package)
+        Objects[package] = nil
+    end)
 end)
 
 lib.onCache('vehicle', function(veh)
@@ -70,10 +91,17 @@ lib.onCache('vehicle', function(veh)
                     },
                     label = Config.searchLabel
                 }) then
-                    TriggerServerEvent('aj-veh-package:server:SearchedPackage', Entity(cache.vehicle).state.hasPackage, NetworkGetNetworkIdFromEntity(cache.vehicle))
+                    TriggerServerEvent('aj-veh-package:server:SearchedPackage')
                     break
                 end
             end
         end
+    end
+end)
+
+AddEventHandler('onResourceStop', function(r)
+    if cache.resource ~= r then return end
+    for object in pairs(Objects) do
+        DeleteEntity(object)
     end
 end)

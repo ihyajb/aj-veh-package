@@ -1,5 +1,4 @@
 lib.versionCheck('ihyajb/aj-veh-package')
-local Packages = {}
 local Config = require'shared.config'
 
 local DoesEntityExist = DoesEntityExist
@@ -10,7 +9,6 @@ local GetEntityModel = GetEntityModel
 local GetPedInVehicleSeat = GetPedInVehicleSeat
 local ox_inventory = exports.ox_inventory
 AddEventHandler('entityCreated', function(handle)
-    if #Packages == Config.maxPackages then return end
     if not DoesEntityExist(handle) then return end
     if GetEntityPopulationType(handle) ~= 2 then return end
     if GetEntityType(handle) ~= 2 then return end
@@ -20,46 +18,24 @@ AddEventHandler('entityCreated', function(handle)
     if Config.blacklistedModels[GetEntityModel(handle)] then return end
     if math.random(1, Config.percent) ~= 1 then return end
 
-    TriggerClientEvent('aj-veh-package:client:StartRandomPackage', NetworkGetEntityOwner(handle), NetworkGetNetworkIdFromEntity(handle))
+    local success, boneID = lib.callback.await('aj-veh-package:client:ValidateVehicle', NetworkGetEntityOwner(handle), NetworkGetNetworkIdFromEntity(handle))
+    if not success then return end
+    local data = {
+        model = Config.packageProps[math.random(#Config.packageProps)],
+        boneID = boneID,
+        rotation = math.random(0, 360) + 0.0
+    }
+    Entity(handle).state:set('loadPackage', data, true)
+    Entity(handle).state:set('hasPackage', true, true)
+    lib.print.debug('Adding Package to vehicle!')
 end)
 
-local function FindAndDelete(object)
-    if not DoesEntityExist(object) then return end
-    DeleteEntity(object)
-    for i = 1, #Packages do
-        if Packages[i] == object then
-            table.remove(Packages, i)
-            break
-        end
-    end
-end
-
-lib.callback.register('aj-veh-package:server:CreatePackage', function(source, vNetID)
-    local vehicle = NetworkGetEntityFromNetworkId(vNetID)
-    local coords = GetEntityCoords(vehicle)
-    local object = CreateObjectNoOffset(Config.packageProps[math.random(#Config.packageProps)], coords.x, coords.y, coords.z - 5, true, true, false)
-    Packages[#Packages+1] = object
-    while not DoesEntityExist(object) do Wait(0) end
-    Entity(vehicle).state:set('hasPackage', object, true)
-    CreateThread(function()
-        while DoesEntityExist(object) do
-            Wait(1000)
-            if not DoesEntityExist(vehicle) then
-                lib.print.debug('Vehicle poofed, Deleting Object!')
-                FindAndDelete(object)
-                break
-            end
-        end
-    end)
-    return NetworkGetNetworkIdFromEntity(object)
-end)
-
-RegisterNetEvent('aj-veh-package:server:SearchedPackage', function(object, vNetID)
+RegisterNetEvent('aj-veh-package:server:SearchedPackage', function()
     local src = source
-    local veh = NetworkGetEntityFromNetworkId(vNetID)
+    local veh = GetVehiclePedIsIn(GetPlayerPed(src), false)
+    if veh == 0 or not DoesEntityExist(veh) then return end
     if not Entity(veh).state.hasPackage then return end
-    if not DoesEntityExist(object) then return end
-    FindAndDelete(object)
+    Entity(veh).state:set('loadPackage', nil, true)
     Entity(veh).state:set('hasPackage', nil, true)
     local rewardItem = Config.rewardItems[math.random(#Config.rewardItems)]
     ox_inventory:AddItem(src, Config.rewardItems[rewardItem].item, math.random(Config.rewardItems[rewardItem].minAmount, Config.rewardItems[rewardItem].maxAmount))
@@ -67,16 +43,12 @@ end)
 
 AddEventHandler('onResourceStop', function(r)
     if cache.resource ~= r then return end
-    for i = 1, #Packages do
-        if DoesEntityExist(Packages[i]) then
-            DeleteEntity(Packages[i])
-        end
-    end
     local vehicles = GetAllVehicles()
     for i = 1, #vehicles do
         if DoesEntityExist(vehicles[i]) then
+            Entity(vehicles[i]).state:set('loadPackage', nil, true)
             Entity(vehicles[i]).state:set('hasPackage', nil, true)
-            -- DeleteEntity(vehicles[i])
+            -- DeleteEntity(vehicles[i]) --! Use for debug to refresh parked vehicle pool
         end
     end
 end)

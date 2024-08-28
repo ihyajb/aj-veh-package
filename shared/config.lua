@@ -1,13 +1,14 @@
 return {
     debug = false,
-    maxPackages = 20, --Max amount of packages in the world at once
-    percent = 10, -- A 1 in x % for a package to spawn
+    percent = 25, -- A 1 in x % for a package to spawn
     searchTime = 5000, -- How long the progress bar is
     searchLabel = 'Searching', -- Label of the progress bar
     blacklistedModels = { --All Models you dont want the script to spawn packages in
         [`caddy`] = true, -- Classed as a "automobile"
         [`forklift`] = true, -- Classed as a "automobile"
         [`blazer`] = true, -- Classed as a "automobile"
+        [`mlue`] = true, -- Classed as a "automobile"
+        [`mlue2`] = true, -- Classed as a "automobile"
     },
     packageProps = { -- The model of the objects that can spawn in the seat
         `prop_drug_package_02`,
