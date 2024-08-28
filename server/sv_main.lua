@@ -1,3 +1,4 @@
+lib.versionCheck('ihyajb/aj-veh-package')
 local Packages = {}
 local Config = require'shared.config'
 
