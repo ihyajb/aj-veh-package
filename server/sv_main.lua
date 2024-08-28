@@ -2,21 +2,24 @@ lib.versionCheck('ihyajb/aj-veh-package')
 local Packages = {}
 local Config = require'shared.config'
 
+local DoesEntityExist = DoesEntityExist
+local GetEntityPopulationType = GetEntityPopulationType
+local GetEntityType = GetEntityType
+local GetVehicleType = GetVehicleType
+local GetEntityModel = GetEntityModel
+local GetPedInVehicleSeat = GetPedInVehicleSeat
+local ox_inventory = exports.ox_inventory
 AddEventHandler('entityCreated', function(handle)
     if #Packages == Config.maxPackages then return end
     if not DoesEntityExist(handle) then return end
-    local popType = GetEntityPopulationType(handle)
-    if popType ~= 2 then return end
-
-    local type = GetEntityType(handle)
-    if type ~= 2 then return end
+    if GetEntityPopulationType(handle) ~= 2 then return end
+    if GetEntityType(handle) ~= 2 then return end
     if GetVehicleType(handle) ~= 'automobile' then return end
+    if GetPedInVehicleSeat(handle, -1) > 0 then return end
     if Entity(handle).state.hasPackage then return end
     if Config.blacklistedModels[GetEntityModel(handle)] then return end
     if math.random(1, Config.percent) ~= 1 then return end
 
-    local driver = GetPedInVehicleSeat(handle, -1)
-    if driver > 0 then return end
     TriggerClientEvent('aj-veh-package:client:StartRandomPackage', NetworkGetEntityOwner(handle), NetworkGetNetworkIdFromEntity(handle))
 end)
 
