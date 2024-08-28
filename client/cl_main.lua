@@ -63,7 +63,7 @@ lib.onCache('vehicle', function(veh)
                         car = true,
                         move = true
                     },
-                    label = 'Searching'
+                    label = Config.SearchLabel
                 }) then
                     TriggerServerEvent('aj-veh-package:server:SearchedPackage', Entity(cache.vehicle).state.hasPackage, NetworkGetNetworkIdFromEntity(cache.vehicle))
                     break
