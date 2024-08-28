@@ -1,5 +1,5 @@
 return {
-    debug = true,
+    debug = false,
     maxPackages = 20, --Max amount of packages in the world at once
     percent = 10, -- A 1 in x % for a package to spawn
     SearchTime = 5000, -- How long the progress bar is
