@@ -6,26 +6,31 @@ local Seats = {
     'seat_pside_r'
 }
 
-local function GetVehicleDoorCount(entity)
-    local doorCount = 0
-	if GetEntityBoneIndexByName(entity, 'door_pside_f') ~= -1 then doorCount += 1 end
-	if GetEntityBoneIndexByName(entity, 'door_pside_r') ~= -1 then doorCount += 1 end
-	if GetEntityBoneIndexByName(entity, 'door_dside_f') ~= -1 then doorCount += 1 end
-	if GetEntityBoneIndexByName(entity, 'door_dside_r') ~= -1 then doorCount += 1 end
-    return doorCount
+local function GetValidSeats(entity)
+    local count = 0
+    for i = 1, #Seats do
+        if GetEntityBoneIndexByName(entity, Seats[i]) ~= -1 then
+            count += 1
+        end
+    end
+    return count
 end
 
 RegisterNetEvent('aj-veh-package:client:StartRandomPackage', function(vNetID)
     local entity = lib.waitFor(function()
         if NetworkDoesEntityExistWithNetworkId(vNetID) then return NetworkGetEntityFromNetworkId(vNetID) end
-    end, 'Failed to get vehicle', 10000)
-    local totalSeats = GetVehicleDoorCount(entity) - 1
-    local selectedSeat = Seats[math.random(1, totalSeats)]
+    end, 'Failed to get vehicle NetworkID', 10000)
+    local validSeats = GetValidSeats(entity)
+    if validSeats == 0 then
+        lib.print.error(string.format('Vehicle "%s" failed to generare any valid seats!', GetEntityArchetypeName(entity)))
+        return
+    end
+    local selectedSeat = Seats[math.random(1, validSeats)]
     local boneID = GetEntityBoneIndexByName(entity, selectedSeat)
     local oNetID = lib.callback.await('aj-veh-package:server:CreatePackage', false, vNetID)
     local package = lib.waitFor(function()
         if NetworkDoesEntityExistWithNetworkId(oNetID) then return NetworkGetEntityFromNetworkId(oNetID) end
-    end, 'Failed to get package', 10000)
+    end, 'Failed to get object NetworkID', 10000)
 
     --! This is prob bad code but ¯\_(ツ)_/¯
     while DoesEntityExist(entity) and not NetworkHasControlOfEntity(entity) do
