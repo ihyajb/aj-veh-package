@@ -43,7 +43,6 @@ RegisterNetEvent('aj-veh-package:client:StartRandomPackage', function(vNetID)
     end
 
     if Config.debug then
-        -- SetEntityDrawOutline(entity, true)
         SetEntityDrawOutline(package, true)
         SetEntityDrawOutlineShader(1)
     end

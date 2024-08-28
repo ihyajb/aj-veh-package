@@ -75,7 +75,8 @@ AddEventHandler('onResourceStop', function(r)
     local vehicles = GetAllVehicles()
     for i = 1, #vehicles do
         if DoesEntityExist(vehicles[i]) then
-            DeleteEntity(vehicles[i])
+            Entity(vehicles[i]).state:set('hasPackage', nil, true)
+            -- DeleteEntity(vehicles[i])
         end
     end
 end)
