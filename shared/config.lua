@@ -11,9 +11,9 @@ return {
         `prop_drug_package_02`,
         `ch_prop_ch_bag_01a`,
         `tr_prop_tr_bag_clothing_01a`,
-        `prop_beach_bag_01a`,
         `h4_prop_h4_cash_bag_01a`,
         `sf_prop_sf_laptop_01a`,
+        `xm3_prop_xm3_backpack_01a`,
     },
     rewardItems = { --Items gotten after searching the package
         {
