@@ -38,7 +38,7 @@ RegisterNetEvent('aj-veh-package:server:SearchedPackage', function()
     Entity(veh).state:set('loadPackage', nil, true)
     Entity(veh).state:set('hasPackage', nil, true)
     local rewardItem = Config.rewardItems[math.random(#Config.rewardItems)]
-    ox_inventory:AddItem(src, Config.rewardItems[rewardItem].item, math.random(Config.rewardItems[rewardItem].minAmount, Config.rewardItems[rewardItem].maxAmount))
+    ox_inventory:AddItem(src, rewardItem.item, math.random(rewardItem.minAmount, rewardItem.maxAmount))
 end)
 
 AddEventHandler('onResourceStop', function(r)
