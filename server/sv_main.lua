@@ -3,7 +3,7 @@ local Packages = {}
 local Config = require'shared.config'
 
 AddEventHandler('entityCreated', function(handle)
-    if #Packages == 10 then return end
+    if #Packages == Config.maxPackages then return end
     if not DoesEntityExist(handle) then return end
     local popType = GetEntityPopulationType(handle)
     if popType ~= 2 then return end
