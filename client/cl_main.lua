@@ -57,14 +57,14 @@ lib.onCache('vehicle', function(veh)
             Wait(0)
             if IsControlJustPressed(0, 38) then --E
                 if lib.progressCircle({
-                    duration = Config.SearchTime,
+                    duration = Config.searchTime,
                     canCancel = true,
                     position = 'bottom',
                     disable = {
                         car = true,
                         move = true
                     },
-                    label = Config.SearchLabel
+                    label = Config.searchLabel
                 }) then
                     TriggerServerEvent('aj-veh-package:server:SearchedPackage', Entity(cache.vehicle).state.hasPackage, NetworkGetNetworkIdFromEntity(cache.vehicle))
                     break

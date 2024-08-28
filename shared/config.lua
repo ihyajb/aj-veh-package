@@ -2,8 +2,8 @@ return {
     debug = false,
     maxPackages = 20, --Max amount of packages in the world at once
     percent = 10, -- A 1 in x % for a package to spawn
-    SearchTime = 5000, -- How long the progress bar is
-    SearchLabel = 'Searching', -- Label of the progress bar
+    searchTime = 5000, -- How long the progress bar is
+    searchLabel = 'Searching', -- Label of the progress bar
     blacklistedModels = { --All Models you dont want the script to spawn packages in
         [`caddy`] = true,
     },
