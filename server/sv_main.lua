@@ -54,12 +54,12 @@ end)
 RegisterNetEvent('aj-veh-package:server:SearchedPackage', function(object, vNetID)
     local src = source
     local veh = NetworkGetEntityFromNetworkId(vNetID)
-    if DoesEntityExist(object) then
-        FindAndDelete(object)
-    end
+    if not Entity(veh).state.hasPackage then return end
+    if not DoesEntityExist(object) then return end
+    FindAndDelete(object)
     Entity(veh).state:set('hasPackage', nil, true)
     local rewardItem = Config.rewardItems[math.random(#Config.rewardItems)]
-    exports.ox_inventory:AddItem(src, Config.rewardItems[rewardItem].item, math.random(Config.rewardItems[rewardItem].minAmount, Config.rewardItems[rewardItem].maxAmount))
+    ox_inventory:AddItem(src, Config.rewardItems[rewardItem].item, math.random(Config.rewardItems[rewardItem].minAmount, Config.rewardItems[rewardItem].maxAmount))
 end)
 
 AddEventHandler('onResourceStop', function(r)
