@@ -1,6 +1,6 @@
 lib.versionCheck('ihyajb/aj-veh-package')
 local Config = require'shared.config'
-QBCore = exports['qb-core']:GetCoreObject()
+local QBCore = exports['qb-core']:GetCoreObject()
 
 local DoesEntityExist = DoesEntityExist
 local GetEntityPopulationType = GetEntityPopulationType
@@ -48,7 +48,7 @@ RegisterNetEvent('aj-veh-package:server:SearchedPackage', function()
         Player.Functions.AddItem(rewardItem.item, rewardChance, false)
         TriggerClientEvent("inventory:client:ItemBox", Player.PlayerData.source, QBCore.Shared.Items[rewardItem.item], "add", rewardChance)
     else
-        print("Error: inventory not set in config")
+        lib.print.error('"Config.inventory" is not setup correctly!')
     end
 end)
 
