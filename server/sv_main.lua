@@ -1,5 +1,6 @@
 lib.versionCheck('ihyajb/aj-veh-package')
 local Config = require'shared.config'
+local QBCore = exports['qb-core']:GetCoreObject()
 
 local DoesEntityExist = DoesEntityExist
 local GetEntityPopulationType = GetEntityPopulationType
@@ -37,8 +38,18 @@ RegisterNetEvent('aj-veh-package:server:SearchedPackage', function()
     if not Entity(veh).state.hasPackage then return end
     Entity(veh).state:set('loadPackage', nil, true)
     Entity(veh).state:set('hasPackage', nil, true)
-    local rewardItem = Config.rewardItems[math.random(#Config.rewardItems)]
-    ox_inventory:AddItem(src, rewardItem.item, math.random(rewardItem.minAmount, rewardItem.maxAmount))
+    if Config.inventory == "ox" then
+        local rewardItem = Config.rewardItems[math.random(#Config.rewardItems)]
+        ox_inventory:AddItem(src, rewardItem.item, math.random(rewardItem.minAmount, rewardItem.maxAmount))
+    elseif Config.inventory == "qb" then
+        local rewardItem = Config.rewardItems[math.random(#Config.rewardItems)]
+        local rewardChance = math.random(rewardItem.minAmount, rewardItem.maxAmount)
+        local Player = QBCore.Functions.GetPlayer(src)
+        Player.Functions.AddItem(rewardItem.item, rewardChance, false)
+        TriggerClientEvent("inventory:client:ItemBox", Player.PlayerData.source, QBCore.Shared.Items[rewardItem.item], "add", rewardChance)
+    else
+        lib.print.error('"Config.inventory" is not setup correctly!')
+    end
 end)
 
 AddEventHandler('onResourceStop', function(r)
